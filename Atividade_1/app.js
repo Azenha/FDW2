@@ -1,39 +1,27 @@
 const express = require('express')
 const app = express()
+const cors = require('cors');
+const mongoose = require('mongoose');
+const { use } = require('./rotas/produto_rotas');
 const port = 3000
 
-let listaProdutos = [];
-let geradorId = 1;
+const rotaProduto = require('./rotas/produto_rotas');
 
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
+app.use(cors());
 
-app.get('/produtos', (req, res) => {
-    res.send('Produto!')
-})
+mongoose.connect('mongodb://localhost:27017/app_produtos')
+    .then(() => {
+        console.log('BD conectado')
+    }).catch((error) => {
+        console.log('Erro ao conectar ao BD')
+    });
 
-app.get('/produtos/:id', (req, res) => {
-    res.send('Buscando o produto!')
-})
+app.use('/api/produtos', rotaProduto);
 
-app.post('/produtos', (req, res) => {
-    //res.send('Cadastro de produto!')
-    res.json(req.body)
-})
-
-app.put('/produtos/:id', function (req, res) {
-    res.send('Atualizando o produto!');
-  });
-
-app.delete('/produtos/:id', function (req, res) {
-    res.send('Deletando o produto!');
-  });
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening at http://localhost:${port}`)
 })
-
