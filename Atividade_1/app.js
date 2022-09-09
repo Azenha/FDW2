@@ -1,27 +1,22 @@
 const express = require('express')
+const mongoose = require('mongoose') 
+const rotaProduto = require('./rotas/produto_rotas')
 const app = express()
-const cors = require('cors');
-const mongoose = require('mongoose');
-const { use } = require('./rotas/produto_rotas');
 const port = 3000
 
-const rotaProduto = require('./rotas/produto_rotas');
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
-app.use(express.json()) // for parsing application/json
-app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
-
-app.use(cors());
-
-mongoose.connect('mongodb://localhost:27017/app_produtos')
-    .then(() => {
-        console.log('BD conectado')
-    }).catch((error) => {
-        console.log('Erro ao conectar ao BD')
-    });
+//Configuração da conexão com o Mongo
+mongoose.connect('mongodb://127.0.0.1:27017/app_produtos')
+  .then(() => {
+    console.log("Conectado ao Mongo..");
+  }).catch((error) => { 
+    console.log("Erro>:", error) 
+  });
 
 app.use('/api/produtos', rotaProduto);
 
-
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Example app listening on port ${port}`)
 })

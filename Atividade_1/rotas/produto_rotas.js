@@ -1,11 +1,12 @@
 const express = require('express');
-const router = express.Router();
 const produtoController = require('../controller/produto_controller')
 
+const router = express.Router();
+//Rota do recurso: "/api/produtos"
+
 router.get('/', produtoController.listar)
-router.get('/search', produtoController.procurar)
-router.get('/:id', produtoController.buscarPorId)
 router.post('/', produtoController.inserir)
+router.get('/:id', produtoController.buscarPorId)
 router.put('/:id', produtoController.atualizar)
 router.delete('/:id', produtoController.deletar)
 

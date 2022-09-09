@@ -21,60 +21,89 @@ exports.listar = async (req, res) => {
 
 exports.buscarPorId = (req, res) => {
     const id = req.params.id;
-    Produto.findById(id, (err, produto) => {
+
+    //Produto.findOne({_id: id}, (err, produtoEncontrado) => {   
+    Produto.findById(id, (err, produtoEncontrado) => {
         if (err) {
             res.status(500).send(err);
         }
-        if (produto) {
-            res.json(produto);
+        else if (produtoEncontrado) {
+            return res.json(produtoEncontrado);
         }
         else {
-            res.status(404).json({ erro: "Produto nao encontrado" });
+            return res.status(404).json(
+                { Erro: "Produto nao encontrado" }
+            )
         }
+
     })
 }
 
 exports.inserir = (req, res) => {
-    let novoProduto = new Produto(req.body);
-    novoProduto.save((err, produto) => {
-        if (err) {
-            res.send(err);
-        }
-        res.status(201).json(novoProduto);
-    })
-}
+    const produtoRequest = req.body;
+    if (produtoRequest && produtoRequest.nome && produtoRequest.preco) {
 
-exports.atualizar = (req, res) => {
-    const id = req.params.id;
-    const produtoAtualizar = req.body;
-
-    Produto.findByIdAndUpdate(id, produtoAtualizar, { new: true },
-        (err, produtoAtualizado) => {
+        const produtoNovo = new Produto(produtoRequest);
+        produtoNovo.save((err, produtoSalvo) => {
             if (err) {
                 res.status(500).send(err);
             }
-            if (produtoAtualizado) {
-                res.json(produtoAtualizado);
+            else {
+                return res.status(201).json(produtoSalvo);
+            }
+        })
+
+    }
+    else {
+        return res.status(400).json({
+            Erro: "Nome e/ou preco sao obrigatorios"
+        })
+    }
+}
+
+
+exports.atualizar = (req, res) => {
+    const id = req.params.id;
+    const produtoRequest = req.body;
+
+    if (!produtoRequest || !produtoRequest.nome || !produtoRequest.preco) {
+        return res.status(400).json({
+            Erro: "Nome e/ou preco sao obrigatorios"
+        });
+    }
+
+    Produto.findByIdAndUpdate(id, produtoRequest, { new: true },
+        (err, produtoAtualizado) => {
+            if (err) {
+                res.status(500).send(err)
+            }
+            else if (produtoAtualizado) {
+                return res.json(produtoAtualizado);
             }
             else {
-                res.status(404).json({ erro: "Produto nao encontrado" });
+                return res.status(404).json(
+                    { Erro: "Produto nao encontrado" }
+                )
             }
         })
 }
 
 exports.deletar = (req, res) => {
     const id = req.params.id;
+
     Produto.findByIdAndDelete(id, (err, produtoDeletado) => {
         if (err) {
-            res.status(500).send(err);
+            return res.status(500).send(err);
         }
-        if (produtoDeletado) {
-            res.json(produtoDeletado);
+        else if (produtoDeletado) {
+            return res.json(produtoDeletado);
         }
         else {
-            res.status(404).json({ erro: "Produto nao encontrado" });
+            return res.status(404).json(
+                { Erro: "Produto nao encontrado" }
+            )
         }
-    });
+    })
 }
 
 exports.procurar = (req, res) => {
