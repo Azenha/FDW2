@@ -9,16 +9,6 @@ exports.listar = (req, res) => {
     })
 }
 
-/* listando utilizando async await
-exports.listar = async (req, res) => {
-  try { 
-    const produtos = await Produto.find({});
-    res.json(produtos);
-  } catch (err) {
-    res.status(500).send(err);
-  }
-}*/
-
 exports.buscarPorId = (req, res) => {
     const id = req.params.id;
 
@@ -104,24 +94,4 @@ exports.deletar = (req, res) => {
             )
         }
     })
-}
-
-exports.procurar = (req, res) => {
-    if (req.query && req.query.nome) {
-        const paramNome = req.query.nome;
-        Produto.find({ nome: paramNome }, (err, produtos) => {
-            if (err) {
-                res.status(500).send(err);
-            }
-            if (produtos && produtos.length > 0) {
-                res.json(produtos);
-            }
-            else {
-                res.status(404).json({ erro: "Produto nao encontrado" });
-            }
-        })
-    }
-    else {
-        res.status(400).send({ erro: "Faltou o parametro nome" });
-    }
 }

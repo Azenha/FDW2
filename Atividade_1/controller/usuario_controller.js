@@ -1,90 +1,147 @@
-const Usuario = require('../model/usuario');
-require("dotenv-safe").config();
 const jwt = require('jsonwebtoken')
+const Usuario = require('../model/usuario');
 
-exports.listaUsuarios = (req, res) => {
-    Usuario.find({}, (err, listaUsuarios) => {
+exports.listar = (req, res) => {
+    Usuario.find({}, (err, usuarios) => {
         if (err) {
-            res.status(500).json({ msg: err.msg })
+            res.status(500).json({ Erro: err })
         }
         else {
-            res.json(listaUsuarios);
+            res.status(200).json(usuarios);
         }
     })
 }
 
+exports.inserir = (req, res) => {
+    const usuarioRequest = req.body;
+    if (usuarioRequest && usuarioRequest.nome
+        && usuarioRequest.email && usuarioRequest.senha) {
 
-exports.buscarPorUsername = (req, res) => {
-    const query = req.query;
-    if (query && query.username) {
-        Usuario.findOne(query.username, (err, UsuarioEncontrado) => {
+        const usuarioNovo = new Usuario(usuarioRequest);
+        usuarioNovo.save((err, usuarioSalvo) => {
             if (err) {
-                res.status(500).json({ msg: err })
-            }
-            else if (UsuarioEncontrado) {
-                res.json(UsuarioEncontrado);
+                res.status(500).json({ Erro: err })
             }
             else {
-                res.status(404).json({ msg: "Usuario nao encontrado" });
+                return res.status(201).json(usuarioSalvo);
             }
-        });
+        })
+
     }
     else {
-        //Bad Request
-
-        res.status(400).json({ msg: "Faltou a query username" });
+        return res.status(400).json({
+            Erro: "Nome, email e/ou senha sao obrigatorios"
+        })
     }
 }
 
+exports.buscarPorId = (req, res) => {
+    const id = req.params.id;
 
-exports.inserir = (req, res) => {
-    let user = req.body;
-    if (user.usuario && user.senha) {
-        const userNovo = new Usuario(user);
-        userNovo.save(user, (err, UsuarioInserido) => {
-            if (err) {
-                res.status(500).json({ msg: err.msg })
-            }
-            else {
-                res.status(201).send(UsuarioInserido);
-            }
+    Usuario.findById(id, (err, usuarioEncontrado) => {
+        if (err) {
+            res.status(500).json({ Erro: err });
+        }
+        else if (usuarioEncontrado) {
+            return res.json(usuarioEncontrado);
+        }
+        else {
+            return res.status(404).json(
+                { Erro: "Usuario nao encontrado" }
+            )
+        }
+
+    })
+}
+
+exports.atualizar = (req, res) => {
+    const id = req.params.id;
+    const usuarioRequest = req.body;
+
+    if (!usuarioRequest || !usuarioRequest.nome
+        || !usuarioRequest.email) {
+        return res.status(400).json({
+            Erro: "Nome e/ou email sao obrigatorios"
         });
     }
-    else {
-        //Bad request 
-        res.status(400).json({ msg: "Entrada de dados inválida" });
-    }
-};
 
-
-
-exports.validarUsuario = (req, res) => {
-    const userLogin = req.body;
-    const userLoginUsuario = req.body.usuario;
-    if (userLogin && userLogin.usuario && userLogin.senha) {
-        Usuario.findOne({userLoginUsuario} , (err, usuarioLogado) => {
+    Usuario.findByIdAndUpdate(id, usuarioRequest, { new: true },
+        (err, usuarioAtualizado) => {
             if (err) {
-                res.status(401).json({ msg: "Usuário Inválido" })
+                res.status(500).json({ Erro: err });
             }
-            else if (usuarioLogado) {
-                if (usuarioLogado.senha == usuarioLogado.senha) {
-                    //auth ok
-                    const id = usuarioLogado._id; 
-                    const token = jwt.sign( {id}, process.env.SECRET, {
-                        expiresIn: 300 // expires in 5min
-                      });
-                      return  res.status(201).json({ auth: true, token: token });
-                }
-                else {
-                    res.status(401).json({ msg: "Senha inválida" })
-                }
+            else if (usuarioAtualizado) {
+                return res.json(usuarioAtualizado);
             }
             else {
-                res.status(404).json({ msg: "Usuario inválido" });
+                return res.status(404).json(
+                    { Erro: "Usuario nao encontrado" }
+                )
+            }
+        })
+}
+
+exports.deletar = (req, res) => {
+    const id = req.params.id;
+
+    Usuario.findByIdAndDelete(id, (err, usuarioDeletado) => {
+        if (err) {
+            return res.status(500).json({ Erro: err });
+        }
+        else if (usuarioDeletado) {
+            return res.json(usuarioDeletado);
+        }
+        else {
+            return res.status(404).json(
+                { Erro: "Usuario nao encontrado" }
+            )
+        }
+    })
+}
+
+exports.buscarUsuario = (req, res) => {
+    if (req.query && req.query.email) {
+        const paramEmail = req.query.email;
+        Usuario.findOne({ email: paramEmail }, (err, usuarioEncontrado) => {
+            if (err) {
+                return res.status(500).json({ Erro: err });
+            }
+            else if (usuarioEncontrado) {
+                return res.json(usuarioEncontrado);
+            }
+            else {
+                return res.status(404).json(
+                    { Erro: "Usuario nao encontrado" }
+                )
             }
         })
     }
     else {
-        res.status(401).json({ msg: "Usuário ou senha inválidos" })
+        res.status(400).json({ Erro: "Faltou o parametro email" });
+    }
+}
+
+exports.validarUsuario = (req, res) => {
+    if (req.body && req.body.email && req.body.senha) {
+        const emailUsuario = req.body.email;
+        const senhaUsuario = req.body.senha;
+
+        Usuario.findOne({ email: emailUsuario }, (err, usuarioEncontrado) => {
+            if (err) {
+                return res.status(500).json({ Erro: err });
+            }
+            else if (usuarioEncontrado && usuarioEncontrado.senha == senhaUsuario) {
+                const token = jwt.sign({
+                    id: usuarioEncontrado.id
+                }, 'Sen@crs', { expiresIn: "1h" });
+                res.status(201).json({ token: token });
+            }
+            else {
+                res.status(401).json({ Erro: "Usuario ou senha invalidos" });
+            }
+        })
+    }
+    else {
+        res.status(400).json({ Erro: "Parametros invalidos" });
     }
 }
