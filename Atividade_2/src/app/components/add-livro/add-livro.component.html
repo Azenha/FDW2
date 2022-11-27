@@ -1,0 +1,36 @@
+<div>
+    <div class="submit-form">
+      <div *ngIf="!submitted">
+        <div class="form-group">
+          <label for="titulo">Titulo</label>
+          <input
+            type="text"
+            class="form-control"
+            id="titulo"
+            required
+            [(ngModel)]="livro.titulo"
+            name="titulo"
+          />
+        </div>
+  
+        <div class="form-group">
+          <label for="descricaoCurta">Descricao Curta</label>
+          <input
+            class="form-control"
+            id="descricaoCurta"
+            required
+            [(ngModel)]="livro.descricaoCurta"
+            name="descricaoCurta"
+          />
+        </div>
+  
+        <button (click)="saveLivro()" class="btn btn-success">Enviar</button>
+      </div>
+  
+      <div *ngIf="submitted">
+        <h4>Livro cadastrado com sucesso!</h4>
+        <button class="btn btn-success" (click)="newLivro()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+  

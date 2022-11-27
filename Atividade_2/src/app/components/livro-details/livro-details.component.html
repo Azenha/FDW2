@@ -1,0 +1,95 @@
+<div *ngIf="viewMode; else editable">
+    <div *ngIf="currentLivro.id">
+      <h4>Livro</h4>
+      <div>
+        <label><strong>Titulo:</strong></label> {{ currentLivro.titulo }}
+      </div>
+      <div>
+        <label><strong>Description:</strong></label>
+        {{ currentLivro.descricaoCurta }}
+      </div>
+      <div>
+        <label><strong>Status:</strong></label>
+        {{ currentLivro.emEstoque ? "Published" : "Pending" }}
+      </div>
+  
+      <a
+        class="badge badge-warning"
+        routerLink="/livros/{{ currentLivro.id }}"
+      >
+        Editar
+      </a>
+    </div>
+  
+    <div *ngIf="!currentLivro">
+      <br />
+      <p>Please click on a Livro...</p>
+    </div>
+  </div>
+  
+  <ng-template #editable>
+    <div *ngIf="currentLivro.id" class="edit-form">
+      <h4>Livro</h4>
+      <form>
+        <div class="form-group">
+          <label for="titulo">Título</label>
+          <input
+            type="text"
+            class="form-control"
+            id="titulo"
+            [(ngModel)]="currentLivro.titulo"
+            name="titulo"
+          />
+        </div>
+        <div class="form-group">
+          <label for="descricaoCurta">Descricao curta</label>
+          <input
+            type="text"
+            class="form-control"
+            id="descricaoCurta"
+            [(ngModel)]="currentLivro.descricaoCurta"
+            name="descricaoCurta"
+          />
+        </div>
+  
+        <div class="form-group">
+          <label><strong>Status:</strong></label>
+          {{ currentLivro.emEstoque ? "Sim" : "Não" }}
+        </div>
+      </form>
+  
+      <button
+        class="badge badge-primary mr-2"
+        *ngIf="currentLivro.emEstoque"
+        (click)="updateEmEstoque(false)"
+      >
+        Sem estoque
+      </button>
+      <button
+        *ngIf="!currentLivro.emEstoque"
+        class="badge badge-primary mr-2"
+        (click)="updateEmEstoque(true)"
+      >
+        Em estoque
+      </button>
+  
+      <button class="badge badge-danger mr-2" (click)="deleteLivro()">
+        Remover
+      </button>
+  
+      <button
+        type="submit"
+        class="badge badge-success mb-2"
+        (click)="updateLivro()"
+      >
+        Atualizar
+      </button>
+      <p>{{ message }}</p>
+    </div>
+  
+    <div *ngIf="!currentLivro.id">
+      <br />
+      <p>Não foi possível acessar esse livro...</p>
+    </div>
+  </ng-template>
+  
